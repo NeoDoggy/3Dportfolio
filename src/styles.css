@@ -23,10 +23,9 @@ body {
 .content {
   width: 1332px;
   height: 864px;
-  background: #000000;
+  background: transparent;
   overflow-y: hidden;
   overflow-x: hidden;
-
 }
 
 .wrapper {
