@@ -1,0 +1,45 @@
+@import url('https://rsms.me/inter/inter.css');
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+main,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: inter;
+  color: black;
+  background: #202025;
+}
+
+.content {
+  width: 1332px;
+  height: 864px;
+  background: transparent;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.wrapper {
+  width: 1332px;
+  height: 864px;
+  border-radius: 20px;
+}
+
+.content iframe {
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  border-radius: 20px;
+  border: none;
+}
+
