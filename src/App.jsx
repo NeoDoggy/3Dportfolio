@@ -6,7 +6,7 @@ import HeroPage from './HeroPage'
 
 
 
-function Model({props,orbitref,setTimeTxt}) {
+function Model({props,orbitref,setTimeTxt,setLabelOP}) {
   const [hovered, setHovered] = useState(false)
   const group = useRef()
   const iframeRef=useRef()
@@ -30,11 +30,13 @@ function Model({props,orbitref,setTimeTxt}) {
       camera.position.lerp(new THREE.Vector3(0, 5*0.475, -15*0.475),0.05)
       orbitref.current.target.lerp(new THREE.Vector3(0, 3, 0),0.05)
       setOI(false)
+      setLabelOP(0)
     }
     else{
       if(orINIT==false&&(Math.abs(camera.position.x-initialCameraPosition.x)>1.5||Math.abs(camera.position.y-initialCameraPosition.y)>5.85||Math.abs(camera.position.z-initialCameraPosition.z)>1.5)){
         orbitref.current.target.lerp(new THREE.Vector3(0, 0, 0),0.05)
         camera.position.lerp(initialCameraPosition,0.05)
+        setLabelOP(1)
       }
       else{
         setOI(true)
@@ -127,8 +129,8 @@ function Model({props,orbitref,setTimeTxt}) {
         <mesh material={materials.touchbar} geometry={nodes.touchbar.geometry} position={[0, -0.03, 1.2]} />
       </group>
       <ContactShadows position={[0, -3.9, 0]} scale={20} blur={2} far={7.5} />
-      <mesh material={materials.keys} position={[0,-4,2.75]}>
-        <boxGeometry attach="geometry" args={[20,0.1,10]}/>
+      <mesh material={materials.keys} position={[0,-4,0.75]}>
+        <boxGeometry attach="geometry" args={[20,0.1,15]}/>
       </mesh>
     </>
     
@@ -137,12 +139,14 @@ function Model({props,orbitref,setTimeTxt}) {
 
 export default function App() {
   const orbitref=useRef()
+  const timeLabelRef=useRef()
   const [timeTxt, setTimeTxt] = useState("00:00:00 AM");
+  const [labelOP, setLabelOP] = useState(1);
 
   return (
     <>
       <div style={{margin:"50px", position:"absolute", zIndex:"9999999"}}>
-        <span style={{borderRadius:"5px", padding:"10px",fontWeight:"bold", color: '#FFFFFF', backgroundColor: '#525252'}}>{timeTxt}</span>
+        <span ref={timeLabelRef} style={{opacity:labelOP, borderRadius:"5px", padding:"10px",fontWeight:"bold", color: '#FFFFFF', backgroundColor: '#525252', transition: 'opacity 2s ease-in-out'}}>{timeTxt}</span>
       </div>
       
     <Canvas camera={{ position: [0, 5 * 2, -15 * 2], fov: 45 }}>
@@ -150,7 +154,7 @@ export default function App() {
       <pointLight position={[10, 10, 10]} intensity={1.5} />
       <Suspense fallback={null}>
         <group rotation={[0, Math.PI, 0]} position={[0, 0, 0]}>
-          <Model orbitref={orbitref} setTimeTxt={setTimeTxt}/>
+          <Model orbitref={orbitref} setTimeTxt={setTimeTxt} setLabelOP={setLabelOP}/>
         </group>
         <Environment preset="warehouse" />
       </Suspense>
