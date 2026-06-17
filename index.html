@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="NeoDoggy 3D portfolio" />
+    <title>NeoDoggy // 3D Portfolio</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #050505;
+        color: #f2f2f2;
+        font-family: "MS Gothic", "Courier New", monospace;
+      }
+
+      #scene,
+      .screen-portal,
+      .status-panel,
+      .dock {
+        visibility: hidden;
+      }
+
+      #loader {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: #050505;
+      }
+
+      .terminal {
+        width: min(720px, calc(100vw - 32px));
+        min-height: 390px;
+        border: 2px solid #efefef;
+        background: #030303;
+      }
+
+      #boot-log {
+        min-height: 250px;
+        margin: 0;
+        padding: 22px;
+        white-space: pre-wrap;
+      }
+    </style>
+    <script type="module" crossorigin src="/3Dportfolio/assets/index-DIGVaL3Y.js"></script>
+    <link rel="stylesheet" crossorigin href="/3Dportfolio/assets/index-Ihb4SoWA.css">
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene"></canvas>
+
+      <div class="status-panel" aria-label="Current status">
+        <time id="now-time" datetime=""></time>
+        <button id="music-toggle" type="button" disabled>Music: Paused</button>
+        <button id="mute-toggle" type="button" disabled>Mute: Off</button>
+      </div>
+
+      <div id="screen-portal" class="screen-portal" aria-label="Portfolio screen">
+        <iframe
+          id="portfolio-frame"
+          class="screen-frame screen-content"
+          title="NeoDoggy 2D portfolio"
+          referrerpolicy="strict-origin-when-cross-origin"
+        ></iframe>
+      </div>
+
+      <div id="computer-b-screen-portal" class="screen-portal" aria-label="Secondary portfolio screen">
+        <div class="screen-terminal screen-content" aria-label="Flashing status terminal">
+          <div class="screen-terminal-bar">
+            <span></span>
+            <span>WIN_SYS.EXE</span>
+          </div>
+          <pre class="screen-terminal-lines"></pre>
+        </div>
+      </div>
+
+      <section id="loader" aria-live="polite">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span></span>
+            <span></span>
+            <span></span>
+            <strong>neo_boot.exe</strong>
+          </div>
+          <pre id="boot-log"></pre>
+          <div class="progress-shell">
+            <div id="progress-bar"></div>
+          </div>
+          <p id="progress-label">0%</p>
+          <button id="enter-site" type="button" disabled>Enter</button>
+        </div>
+      </section>
+
+      <nav class="dock" aria-label="Portfolio links">
+        <a href="https://github.com/NeoDoggy" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="mailto:neodog0616@gmail.com">Email</a>
+      </nav>
+    </div>
+
+  </body>
+</html>
