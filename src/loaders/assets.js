@@ -1,11 +1,12 @@
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { MODEL_PATH, SCREEN_PLANES } from '../portfolio-config.js';
+import { publicPath } from '../public-path.js';
 import { applyModelMaterials, fitModelToScene } from '../scene/model.js';
 
 export function createAssetLoader({ computerRoot, screenFrames, rippleController, screenController, ui, audio }) {
   const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath('/draco/');
+  dracoLoader.setDecoderPath(publicPath('draco/'));
 
   const gltfLoader = new GLTFLoader();
   gltfLoader.setDRACOLoader(dracoLoader);

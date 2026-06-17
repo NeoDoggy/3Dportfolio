@@ -1,8 +1,10 @@
+import { publicPath } from '../public-path.js';
+
 const AUDIO_FILES = {
-  music: '/sound/music.mp3',
-  startup: '/sound/startup.mp3',
-  keyboard: '/sound/kb.ogg',
-  background: '/sound/bg.mp3'
+  music: publicPath('sound/music.mp3'),
+  startup: publicPath('sound/startup.mp3'),
+  keyboard: publicPath('sound/kb.ogg'),
+  background: publicPath('sound/bg.mp3')
 };
 
 function createAudio(src, { loop = false, volume = 1 } = {}) {

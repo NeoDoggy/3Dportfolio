@@ -1,8 +1,9 @@
 import * as THREE from 'three';
+import { publicPath } from './public-path.js';
 
 export const PORTFOLIO_URL = import.meta.env.VITE_PORTFOLIO_URL || 'https://neodoggy.org';
 
-export const MODEL_PATH = import.meta.env.VITE_COMPUTER_MODEL || '/models/computer.glb';
+export const MODEL_PATH = publicPath(import.meta.env.VITE_COMPUTER_MODEL || 'models/computer.glb');
 
 export const CAMERA_HOME = {
   position: new THREE.Vector3(0.2, 1.15, 6.1),
