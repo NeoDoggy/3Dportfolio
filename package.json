@@ -1,0 +1,19 @@
+{
+  "name": "neo-3d-portfolio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "vite": "^7.3.5",
+    "three": "^0.179.0"
+  },
+  "devDependencies": {}
+}
