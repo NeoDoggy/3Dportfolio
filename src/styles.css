@@ -256,6 +256,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 10;
+  box-sizing: border-box;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -280,7 +281,8 @@ body {
 }
 
 .terminal {
-  width: min(720px, calc(100vw - 32px));
+  justify-self: center;
+  width: min(720px, 100%);
   min-height: 390px;
   border: 2px solid #efefef;
   background: #030303;
