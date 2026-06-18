@@ -312,7 +312,7 @@ body {
 }
 
 #boot-log {
-  min-height: 250px;
+  min-height: 210px;
   margin: 0;
   padding: 22px;
   color: #f2f2f2;
@@ -320,6 +320,21 @@ body {
   line-height: 1.65;
   white-space: pre-wrap;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.42);
+}
+
+.boot-warning {
+  margin: 0 22px 18px;
+  padding: 12px 14px;
+  border: 1px solid #ffd84d;
+  background: rgba(255, 216, 77, 0.14);
+  color: #ffe86f;
+  font-size: 14px;
+  line-height: 1.45;
+  text-shadow: 0 0 10px rgba(255, 216, 77, 0.36);
+}
+
+.boot-warning[hidden] {
+  display: none;
 }
 
 .progress-shell {

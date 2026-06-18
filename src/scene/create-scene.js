@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
-import { CAMERA_HOME, MODEL_PLACEMENT } from '../portfolio-config.js';
+import { CAMERA_CONTROLS, CAMERA_HOME, MODEL_PLACEMENT, SCENE_LIGHTS, SCENE_RENDERING } from '../portfolio-config.js';
 import { createFloor } from './floor.js';
 
 function createControls(camera, domElement) {
@@ -10,30 +11,53 @@ function createControls(camera, domElement) {
   const controls = new OrbitControls(camera, domElement);
 
   controls.enableDamping = true;
-  controls.dampingFactor = 0.065;
-  controls.minDistance = 2.25;
-  controls.maxDistance = 11;
-  controls.minAzimuthAngle = -Math.PI / 28;
-  controls.maxAzimuthAngle = Math.PI / 20;
-  controls.minPolarAngle = Math.max(0.01, homePolarAngle - Math.PI / 28);
-  controls.maxPolarAngle = Math.PI * 0.45;
+  controls.dampingFactor = CAMERA_CONTROLS.dampingFactor;
+  controls.enablePan = CAMERA_CONTROLS.enablePan;
+  controls.enableZoom = CAMERA_CONTROLS.enableZoom;
+  controls.minDistance = CAMERA_CONTROLS.minDistance;
+  controls.maxDistance = CAMERA_CONTROLS.maxDistance;
+  controls.panSpeed = CAMERA_CONTROLS.panSpeed;
+  controls.screenSpacePanning = CAMERA_CONTROLS.screenSpacePanning;
+  controls.minAzimuthAngle = THREE.MathUtils.degToRad(CAMERA_CONTROLS.rotationLimits.minAzimuthDegrees);
+  controls.maxAzimuthAngle = THREE.MathUtils.degToRad(CAMERA_CONTROLS.rotationLimits.maxAzimuthDegrees);
+  controls.minPolarAngle = Math.max(
+    0.01,
+    homePolarAngle + THREE.MathUtils.degToRad(CAMERA_CONTROLS.rotationLimits.minPolarOffsetDegrees)
+  );
+  controls.maxPolarAngle = THREE.MathUtils.degToRad(CAMERA_CONTROLS.rotationLimits.maxPolarDegrees);
   controls.target.copy(CAMERA_HOME.target);
 
   return controls;
 }
 
+function clampControlsTarget(camera, controls) {
+  const bounds = CAMERA_CONTROLS.panTargetBounds;
+  if (!CAMERA_CONTROLS.enablePan || !bounds) return;
+
+  const clampedTarget = controls.target.clone().clamp(bounds.min, bounds.max);
+  const correction = clampedTarget.sub(controls.target);
+  if (correction.lengthSq() === 0) return;
+
+  controls.target.add(correction);
+  camera.position.add(correction);
+}
+
 function addLights(scene) {
-  const ambient = new THREE.HemisphereLight(0xf2f2f2, 0x111111, 1.25);
+  const ambient = new THREE.HemisphereLight(
+    SCENE_LIGHTS.ambient.skyColor,
+    SCENE_LIGHTS.ambient.groundColor,
+    SCENE_LIGHTS.ambient.intensity
+  );
   scene.add(ambient);
 
-  const keyLight = new THREE.DirectionalLight(0xffffff, 3.1);
-  keyLight.position.set(3.8, 5.5, 4.5);
+  const keyLight = new THREE.DirectionalLight(SCENE_LIGHTS.key.color, SCENE_LIGHTS.key.intensity);
+  keyLight.position.copy(SCENE_LIGHTS.key.position);
   keyLight.castShadow = true;
-  keyLight.shadow.mapSize.set(2048, 2048);
+  keyLight.shadow.mapSize.set(SCENE_LIGHTS.key.shadowMapSize, SCENE_LIGHTS.key.shadowMapSize);
   scene.add(keyLight);
 
-  const rimLight = new THREE.PointLight(0xffffff, 4.8, 14);
-  rimLight.position.set(-3.5, 2.2, -2.5);
+  const rimLight = new THREE.PointLight(SCENE_LIGHTS.rim.color, SCENE_LIGHTS.rim.intensity, SCENE_LIGHTS.rim.distance);
+  rimLight.position.copy(SCENE_LIGHTS.rim.position);
   scene.add(rimLight);
 
   return { ambient, keyLight, rimLight };
@@ -41,8 +65,8 @@ function addLights(scene) {
 
 export function createScene({ app, canvas }) {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050505);
-  scene.fog = new THREE.FogExp2(0x050505, 0.025);
+  scene.background = new THREE.Color(SCENE_RENDERING.backgroundColor);
+  scene.fog = new THREE.FogExp2(SCENE_RENDERING.backgroundColor, SCENE_RENDERING.fogDensity);
 
   const cssScene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -58,9 +82,17 @@ export function createScene({ app, canvas }) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.95;
+  renderer.toneMappingExposure = SCENE_RENDERING.toneMappingExposure;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  const roomEnvironment = new RoomEnvironment();
+  const environmentMap = pmremGenerator.fromScene(roomEnvironment).texture;
+  scene.environment = environmentMap;
+  scene.environmentIntensity = SCENE_RENDERING.environmentIntensity;
+  roomEnvironment.dispose();
+  pmremGenerator.dispose();
 
   const cssRenderer = new CSS3DRenderer();
   cssRenderer.setSize(window.innerWidth, window.innerHeight);
@@ -89,9 +121,11 @@ export function createScene({ app, canvas }) {
 
   return {
     camera,
+    clampControlsTarget: () => clampControlsTarget(camera, controls),
     computerRoot,
     controls,
     cssScene,
+    environmentMap,
     lights,
     render,
     resize

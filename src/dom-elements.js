@@ -15,6 +15,7 @@ export function getAppElements() {
     canvas: getRequiredElement('#scene'),
     loaderOverlay: getRequiredElement('#loader'),
     bootLog: getRequiredElement('#boot-log'),
+    bootWarning: getRequiredElement('#boot-warning'),
     progressBar: getRequiredElement('#progress-bar'),
     progressLabel: getRequiredElement('#progress-label'),
     appStylesheet: document.querySelector('#app-stylesheet, link[rel="stylesheet"]'),

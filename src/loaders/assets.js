@@ -1,38 +1,58 @@
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
-import { MODEL_PATH, SCREEN_PLANES } from '../portfolio-config.js';
+import { SCENE_MODELS, SCREEN_PLANES } from '../portfolio-config.js';
 import { publicPath } from '../public-path.js';
-import { applyModelMaterials, fitModelToScene } from '../scene/model.js';
+import { applyModelMaterials, placeModelInScene } from '../scene/model.js';
 
-export function createAssetLoader({ computerRoot, screenFrames, rippleController, screenController, ui, audio }) {
+export function createAssetLoader({ computerRoot, environmentMap, screenFrames, rippleController, screenController, ui, audio }) {
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath(publicPath('draco/'));
+  const loadedModels = new Map();
 
   const gltfLoader = new GLTFLoader();
   gltfLoader.setDRACOLoader(dracoLoader);
 
-  function loadModel() {
+  function loadModel({ path, placement, material }, progressStart, progressEnd) {
     return new Promise((resolve, reject) => {
       gltfLoader.load(
-        MODEL_PATH,
+        path,
         (gltf) => {
           const model = gltf.scene;
-          applyModelMaterials(model);
-          fitModelToScene(model);
+          applyModelMaterials(model, material, environmentMap);
+          placeModelInScene(model, placement);
           computerRoot.add(model);
-          screenController.setup(model);
-          rippleController.setup(model);
-          ui.updateProgress(82);
-          resolve();
+          ui.updateProgress(progressEnd);
+          resolve(model);
         },
         (event) => {
           if (event.lengthComputable) {
-            ui.updateProgress(32 + (event.loaded / event.total) * 48);
+            ui.updateProgress(progressStart + (event.loaded / event.total) * (progressEnd - progressStart));
           }
         },
         reject
       );
     });
+  }
+
+  async function loadSceneModels() {
+    loadedModels.clear();
+    const startProgress = 32;
+    const endProgress = 82;
+    const progressSpan = (endProgress - startProgress) / SCENE_MODELS.length;
+
+    for (const [index, modelConfig] of SCENE_MODELS.entries()) {
+      const progressStart = startProgress + progressSpan * index;
+      const progressEnd = progressStart + progressSpan;
+      ui.appendBootLine(`OK  loading model ${modelConfig.path}`);
+      const model = await loadModel(modelConfig, progressStart, progressEnd);
+      loadedModels.set(modelConfig.id, model);
+    }
+
+    const computerModel = loadedModels.get('computer');
+    if (computerModel) {
+      screenController.setup(computerModel);
+      rippleController.setup(computerModel);
+    }
   }
 
   function loadIframe() {
@@ -68,8 +88,7 @@ export function createAssetLoader({ computerRoot, screenFrames, rippleController
     ui.appendBootLine('OK  loading fonts');
     await ui.waitForFonts();
 
-    ui.appendBootLine(`OK  loading model ${MODEL_PATH}`);
-    await loadModel();
+    await loadSceneModels();
 
     ui.appendBootLine('OK  buffering background music');
     await audio.load();
@@ -81,5 +100,8 @@ export function createAssetLoader({ computerRoot, screenFrames, rippleController
     ui.unlockEnter();
   }
 
-  return { bootApplication };
+  return {
+    bootApplication,
+    getModel: (id) => loadedModels.get(id) || null
+  };
 }

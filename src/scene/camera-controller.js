@@ -10,7 +10,7 @@ function easeInOutCubic(t) {
     : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-export function createCameraController({ camera, controls, screenController, onEntryComplete }) {
+export function createCameraController({ camera, clampControlsTarget, controls, screenController, onEntryComplete }) {
   const focusStartPosition = new THREE.Vector3();
   const focusStartTarget = new THREE.Vector3();
   const focusEndPosition = new THREE.Vector3();
@@ -21,7 +21,20 @@ export function createCameraController({ camera, controls, screenController, onE
   let focusProgress = 1;
   let entryProgress = 1;
   let isOrbitDragging = false;
+  let isObjectHovered = false;
   let isScreenHovered = false;
+
+  function startFocusTo(position, target) {
+    focusProgress = 0;
+    focusStartPosition.copy(camera.position);
+    focusStartTarget.copy(controls.target);
+    focusEndPosition.copy(position);
+    focusEndTarget.copy(target);
+  }
+
+  function startHomeFocus() {
+    startFocusTo(CAMERA_HOME.position, CAMERA_HOME.target);
+  }
 
   function setOrbitDragging(isDragging) {
     isOrbitDragging = isDragging;
@@ -29,17 +42,26 @@ export function createCameraController({ camera, controls, screenController, onE
 
   function startFocusTransition(shouldFocus) {
     isScreenHovered = shouldFocus;
-    focusProgress = 0;
-    focusStartPosition.copy(camera.position);
-    focusStartTarget.copy(controls.target);
 
     if (shouldFocus) {
       screenController.getFocusPosition(focusEndPosition);
-      focusEndTarget.copy(screenController.position);
+      startFocusTo(focusEndPosition, screenController.position);
+    } else if (isObjectHovered) {
+      focusProgress = 1;
     } else {
-      focusEndPosition.copy(CAMERA_HOME.position);
-      focusEndTarget.copy(CAMERA_HOME.target);
+      startHomeFocus();
     }
+  }
+
+  function startObjectFocus({ cameraPosition, target }) {
+    isObjectHovered = true;
+    startFocusTo(cameraPosition, target);
+  }
+
+  function endObjectFocus() {
+    isObjectHovered = false;
+    if (isScreenHovered) return;
+    startHomeFocus();
   }
 
   function updateFocus(delta) {
@@ -54,12 +76,14 @@ export function createCameraController({ camera, controls, screenController, onE
 
   function startEntryFlyIn() {
     isScreenHovered = false;
+    isObjectHovered = false;
     focusProgress = 1;
     entryProgress = 0;
     controls.enabled = false;
     camera.position.copy(entryStartPosition);
     controls.target.copy(entryStartTarget);
     camera.lookAt(controls.target);
+    controls.update();
   }
 
   function updateEntryFlyIn(delta) {
@@ -84,7 +108,7 @@ export function createCameraController({ camera, controls, screenController, onE
   }
 
   function updateIdleReturn(delta) {
-    if (entryProgress < 1 || isOrbitDragging || isScreenHovered || focusProgress < 1) return;
+    if (entryProgress < 1 || isOrbitDragging || isScreenHovered || isObjectHovered || focusProgress < 1) return;
 
     const returnAlpha = 1 - Math.exp(-IDLE_RETURN_RATE * delta);
     camera.position.lerp(CAMERA_HOME.position, returnAlpha);
@@ -98,12 +122,19 @@ export function createCameraController({ camera, controls, screenController, onE
     updateFocus(delta);
     updateIdleReturn(delta);
     controls.update();
+    if (focusProgress >= 1 && !isScreenHovered && !isObjectHovered && entryProgress >= 1) {
+      clampControlsTarget?.();
+    }
   }
 
   return {
+    isFocusActive: () => isScreenHovered || isObjectHovered || focusProgress < 1 || entryProgress < 1,
+    isSubjectFocusActive: () => isScreenHovered || isObjectHovered || focusProgress < 1,
     setOrbitDragging,
+    endObjectFocus,
     startEntryFlyIn,
     startFocusTransition,
+    startObjectFocus,
     update
   };
 }

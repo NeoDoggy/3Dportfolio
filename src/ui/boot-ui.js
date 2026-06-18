@@ -2,12 +2,23 @@ export function createBootUi(elements) {
   const {
     appStylesheet,
     bootLog,
+    bootWarning,
     enterSite,
     loaderOverlay,
     nowTime,
     progressBar,
     progressLabel
   } = elements;
+
+  let actionMode = 'enter';
+
+  function isMobileViewport() {
+    const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+    const narrowViewport = window.matchMedia?.('(max-width: 760px)').matches ?? window.innerWidth <= 760;
+    const mobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+    return (coarsePointer && narrowViewport) || mobileUserAgent;
+  }
 
   function updateProgress(percent) {
     const clamped = Math.max(0, Math.min(100, Math.round(percent)));
@@ -22,19 +33,35 @@ export function createBootUi(elements) {
   function unlockEnter() {
     updateProgress(100);
     appendBootLine('READY');
+    actionMode = isMobileViewport() ? 'fallback' : 'enter';
+    enterSite.textContent = actionMode === 'fallback' ? 'Open 2D Site' : 'Enter';
     enterSite.disabled = false;
     enterSite.focus();
   }
 
   function showRetry(error) {
     appendBootLine(`ERROR ${error?.message || 'boot failed'}`);
+    actionMode = 'retry';
     enterSite.textContent = 'Retry';
     enterSite.disabled = false;
   }
 
   function resetForRetry() {
+    actionMode = 'enter';
     enterSite.textContent = 'Enter';
     enterSite.disabled = true;
+  }
+
+  function getActionMode() {
+    return actionMode;
+  }
+
+  function showMobileWarning(fallbackUrl) {
+    if (!isMobileViewport()) return;
+
+    bootWarning.hidden = false;
+    bootWarning.textContent = `WARN mobile display detected. The embedded screen may not render correctly; the startup button will open ${fallbackUrl}.`;
+    appendBootLine('WARN mobile display detected');
   }
 
   function hideLoader() {
@@ -85,8 +112,10 @@ export function createBootUi(elements) {
 
   return {
     appendBootLine,
+    getActionMode,
     hideLoader,
     resetForRetry,
+    showMobileWarning,
     showRetry,
     startClock,
     unlockEnter,

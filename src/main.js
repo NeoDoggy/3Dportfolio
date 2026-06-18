@@ -2,11 +2,13 @@ import * as THREE from 'three';
 import { createAudioController } from './audio/audio-controller.js';
 import { getAppElements } from './dom-elements.js';
 import { createAssetLoader } from './loaders/assets.js';
+import { createAcrylicHoverController } from './scene/acrylic-hover.js';
 import { createCameraController } from './scene/camera-controller.js';
 import { createScene } from './scene/create-scene.js';
 import { createRippleController } from './scene/ripples.js';
 import { createScreenController } from './scene/screen.js';
 import { createBootUi } from './ui/boot-ui.js';
+import { PORTFOLIO_URL, SCENE_LIGHTS } from './portfolio-config.js';
 
 const elements = getAppElements();
 const ui = createBootUi(elements);
@@ -20,6 +22,7 @@ const screenController = createScreenController({
 });
 const cameraController = createCameraController({
   camera: sceneRig.camera,
+  clampControlsTarget: sceneRig.clampControlsTarget,
   controls: sceneRig.controls,
   onEntryComplete: () => {
     screenController.powerOn();
@@ -29,10 +32,17 @@ const cameraController = createCameraController({
 const assetLoader = createAssetLoader({
   audio,
   computerRoot: sceneRig.computerRoot,
+  environmentMap: sceneRig.environmentMap,
   screenFrames: elements.screenFrames,
   rippleController,
   screenController,
   ui
+});
+createAcrylicHoverController({
+  camera: sceneRig.camera,
+  cameraController,
+  canvas: elements.canvas,
+  getAcrylicModel: () => assetLoader.getModel('acrylic')
 });
 
 async function bootApplication() {
@@ -54,9 +64,14 @@ sceneRig.controls.addEventListener('end', () => {
 elements.enterSite.addEventListener('click', async () => {
   if (elements.enterSite.disabled) return;
 
-  if (elements.enterSite.textContent === 'Retry') {
+  if (ui.getActionMode() === 'retry') {
     ui.resetForRetry();
     bootApplication();
+    return;
+  }
+
+  if (ui.getActionMode() === 'fallback') {
+    window.location.href = PORTFOLIO_URL;
     return;
   }
 
@@ -78,13 +93,18 @@ elements.screenPortal.addEventListener('pointerleave', () => {
 window.addEventListener('resize', sceneRig.resize);
 
 const clock = new THREE.Clock();
+let computerRootRotationY = sceneRig.computerRoot.rotation.y;
 
 function animate() {
   const delta = clock.getDelta();
   const elapsed = clock.elapsedTime;
 
-  sceneRig.lights.rimLight.intensity = 4.4 + Math.sin(elapsed * 2.2) * 0.45;
-  sceneRig.computerRoot.rotation.y = Math.sin(elapsed * 0.22) * 0.025;
+  sceneRig.lights.rimLight.intensity =
+    SCENE_LIGHTS.rim.pulseBase + Math.sin(elapsed * SCENE_LIGHTS.rim.pulseSpeed) * SCENE_LIGHTS.rim.pulseStrength;
+  const idleRotationY = Math.sin(elapsed * 0.22) * 0.025;
+  const rotationTargetY = cameraController.isSubjectFocusActive() ? computerRootRotationY : idleRotationY;
+  computerRootRotationY = THREE.MathUtils.lerp(computerRootRotationY, rotationTargetY, 1 - Math.exp(-4 * delta));
+  sceneRig.computerRoot.rotation.y = computerRootRotationY;
   screenController.update();
   rippleController.update(elapsed, audio.isMusicActive());
   cameraController.update(delta);
@@ -94,5 +114,6 @@ function animate() {
 }
 
 ui.startClock();
+ui.showMobileWarning(PORTFOLIO_URL);
 animate();
 bootApplication();
