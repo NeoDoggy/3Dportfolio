@@ -29,6 +29,7 @@
         position: fixed;
         inset: 0;
         z-index: 10;
+        box-sizing: border-box;
         display: grid;
         place-items: center;
         padding: 24px;
@@ -36,7 +37,8 @@
       }
 
       .terminal {
-        width: min(720px, calc(100vw - 32px));
+        justify-self: center;
+        width: min(720px, 100%);
         min-height: 390px;
         border: 2px solid #efefef;
         background: #030303;
@@ -49,8 +51,8 @@
         white-space: pre-wrap;
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-DfNSXcVC.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Ihb4SoWA.css">
+    <script type="module" crossorigin src="/assets/index-DgFFA5l6.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-dqavv8Ko.css">
   </head>
   <body>
     <div id="app">
@@ -90,6 +92,7 @@
             <strong>neo_boot.exe</strong>
           </div>
           <pre id="boot-log"></pre>
+          <div id="boot-warning" class="boot-warning" hidden></div>
           <div class="progress-shell">
             <div id="progress-bar"></div>
           </div>
