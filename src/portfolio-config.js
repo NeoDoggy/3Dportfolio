@@ -4,6 +4,7 @@ import { publicPath } from './public-path.js';
 export const PORTFOLIO_URL = import.meta.env.VITE_PORTFOLIO_URL || 'https://neodoggy.org';
 
 export const MODEL_PATH = publicPath(import.meta.env.VITE_COMPUTER_MODEL || 'models/computer.glb');
+export const DOG_MODEL_PATH = publicPath(import.meta.env.VITE_DOG_MODEL || 'models/dog.glb');
 export const ACRYLIC_MODEL_PATH = publicPath(import.meta.env.VITE_ACRYLIC_MODEL || 'models/acrylic.glb');
 
 export const CAMERA_HOME = {
@@ -74,15 +75,15 @@ export const COMPUTER_MATERIAL = {
   useSceneEnvironment: true
 };
 
-export const ACRYLIC_PLACEMENT = {
+export const DOG_PLACEMENT = {
   floorY: -0.925,
   position: new THREE.Vector3(-1.45, 0, 1.2),
-  rotation: new THREE.Euler(0, THREE.MathUtils.degToRad(200), 0),
-  scale: 0.18,
+  rotation: new THREE.Euler(0, THREE.MathUtils.degToRad(55), 0),
+  scale: 0.3,
   center: true
 };
 
-export const ACRYLIC_FOCUS = {
+export const DOG_FOCUS = {
   enabled: true,
   cameraDistance: 2.1,
   cameraOffset: new THREE.Vector3(0, 0.15, 0),
@@ -112,10 +113,9 @@ export const SCENE_MODELS = [
     placement: MODEL_PLACEMENT
   },
   {
-    id: 'acrylic',
-    path: ACRYLIC_MODEL_PATH,
-    material: ACRYLIC_MATERIAL,
-    placement: ACRYLIC_PLACEMENT
+    id: 'dog',
+    path: DOG_MODEL_PATH,
+    placement: DOG_PLACEMENT
   }
 ];
 
@@ -139,6 +139,10 @@ export const SCREEN_PLANES = [
     id: 'computer-b',
     type: 'terminal',
     elementId: 'computer-b-screen-portal',
+    textureObjectName: 'Plane.001',
+    textureMaterialName: 'Material.003',
+    textureFlipX: false,
+    textureFlipY: true,
     parentName: 'SM_Computer_B_Monitor.mo_MI_Computer_B_0.001',
     pixelWidth: 1024,
     pixelHeight: 768,

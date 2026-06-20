@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { createAudioController } from './audio/audio-controller.js';
 import { getAppElements } from './dom-elements.js';
 import { createAssetLoader } from './loaders/assets.js';
-import { createAcrylicHoverController } from './scene/acrylic-hover.js';
 import { createCameraController } from './scene/camera-controller.js';
 import { createScene } from './scene/create-scene.js';
+import { createDogHoverController } from './scene/dog-hover.js';
 import { createRippleController } from './scene/ripples.js';
 import { createScreenController } from './scene/screen.js';
 import { createBootUi } from './ui/boot-ui.js';
@@ -38,11 +38,11 @@ const assetLoader = createAssetLoader({
   screenController,
   ui
 });
-createAcrylicHoverController({
+createDogHoverController({
   camera: sceneRig.camera,
   cameraController,
   canvas: elements.canvas,
-  getAcrylicModel: () => assetLoader.getModel('acrylic')
+  getDogModel: () => assetLoader.getModel('dog')
 });
 
 async function bootApplication() {

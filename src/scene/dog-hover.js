@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { ACRYLIC_FOCUS, CAMERA_HOME } from '../portfolio-config.js';
+import { CAMERA_HOME, DOG_FOCUS } from '../portfolio-config.js';
 
 const pointer = new THREE.Vector2();
 
-export function createAcrylicHoverController({ camera, cameraController, canvas, getAcrylicModel }) {
+export function createDogHoverController({ camera, cameraController, canvas, getDogModel }) {
   const box = new THREE.Box3();
   const center = new THREE.Vector3();
   const target = new THREE.Vector3();
@@ -17,12 +17,12 @@ export function createAcrylicHoverController({ camera, cameraController, canvas,
   function getFocusFrame(model) {
     box.setFromObject(model);
     box.getCenter(center);
-    target.copy(center).add(ACRYLIC_FOCUS.targetOffset);
+    target.copy(center).add(DOG_FOCUS.targetOffset);
     viewDirection.subVectors(CAMERA_HOME.position, CAMERA_HOME.target).normalize();
     cameraPosition
       .copy(target)
-      .addScaledVector(viewDirection, ACRYLIC_FOCUS.cameraDistance)
-      .add(ACRYLIC_FOCUS.cameraOffset);
+      .addScaledVector(viewDirection, DOG_FOCUS.cameraDistance)
+      .add(DOG_FOCUS.cameraOffset);
 
     return { cameraPosition, target };
   }
@@ -43,13 +43,13 @@ export function createAcrylicHoverController({ camera, cameraController, canvas,
   function hasPointerMovedPastRelease(event) {
     const deltaX = event.clientX - hoverStartX;
     const deltaY = event.clientY - hoverStartY;
-    return Math.hypot(deltaX, deltaY) >= (ACRYLIC_FOCUS.releasePointerMovePixels ?? 130);
+    return Math.hypot(deltaX, deltaY) >= (DOG_FOCUS.releasePointerMovePixels ?? 130);
   }
 
   function handlePointerMove(event) {
-    if (!ACRYLIC_FOCUS.enabled) return;
+    if (!DOG_FOCUS.enabled) return;
 
-    const model = getAcrylicModel();
+    const model = getDogModel();
     if (!model) return;
 
     if (isHovered && !hasPointerMovedPastRelease(event)) {

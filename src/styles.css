@@ -72,6 +72,18 @@ body {
   pointer-events: none;
 }
 
+.screen-portal.is-material-backed {
+  background: transparent;
+  box-shadow: none;
+}
+
+.screen-portal.is-material-backed .screen-content,
+.screen-portal.is-material-backed::before,
+.screen-portal.is-material-backed::after {
+  opacity: 0;
+  visibility: hidden;
+}
+
 .screen-portal::before,
 .screen-portal::after {
   content: "";
